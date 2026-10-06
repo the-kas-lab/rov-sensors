@@ -1,0 +1,80 @@
+{
+  "layout": {
+    "direction": "row",
+    "first": {
+      "direction": "column",
+      "first": "Plot!sonarprofile",
+      "second": "Image!sonarwaterfall",
+      "splitPercentage": 35
+    },
+    "second": {
+      "direction": "column",
+      "first": "Plot!sonarpeak",
+      "second": "Parameters!sonarparams",
+      "splitPercentage": 50
+    },
+    "splitPercentage": 70
+  },
+  "configById": {
+    "Plot!sonarprofile": {
+      "title": "Current ping: echo strength vs distance",
+      "paths": [
+        { "value": "/omniscan450/profile.power_db[:]", "enabled": true, "color": "#4e98e2", "label": "power (dB)", "timestampMethod": "receiveTime" }
+      ],
+      "xAxisVal": "currentCustom",
+      "xAxisPath": { "value": "/omniscan450/profile.range_m[:]", "enabled": true },
+      "minYValue": -45,
+      "maxYValue": 80,
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": false,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": false,
+      "isSynced": false,
+      "sidebarDimension": 240
+    },
+    "Image!sonarwaterfall": {
+      "cameraState": {
+        "distance": 20,
+        "perspective": true,
+        "phi": 60,
+        "target": [0, 0, 0],
+        "targetOffset": [0, 0, 0],
+        "targetOrientation": [0, 0, 0, 1],
+        "thetaOffset": 45,
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {},
+      "layers": {},
+      "publish": { "type": "point" },
+      "imageMode": { "imageTopic": "/omniscan450/waterfall" }
+    },
+    "Plot!sonarpeak": {
+      "title": "Strongest echo distance (m)",
+      "paths": [
+        { "value": "/omniscan450/peak.range", "enabled": true, "color": "#f5774d", "label": "peak range (m)", "timestampMethod": "receiveTime" }
+      ],
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 30,
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": true,
+      "isSynced": false,
+      "sidebarDimension": 240
+    },
+    "Parameters!sonarparams": {
+      "title": "Live parameters (omniscan450.*)"
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "linkedGlobalVariables": [],
+  "playbackConfig": { "speed": 1 }
+}

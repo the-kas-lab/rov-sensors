@@ -1,0 +1,7 @@
+# Sonar reader (omniscan450_reader.py)
+bluerobotics-ping>=0.2.5
+numpy
+matplotlib       # omniscan450_plot.py
+
+# Mock sonar API (rov_sensors/omniscan_mock/)
+-r rov_sensors/omniscan_mock/requirements.txt
