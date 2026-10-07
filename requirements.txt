@@ -1,7 +1,7 @@
-# Sonar reader (omniscan450_reader.py)
+# Sonar driver + standalone reader (standalone/omniscan450_reader.py)
 bluerobotics-ping>=0.2.5
 numpy
-matplotlib       # omniscan450_plot.py
+matplotlib       # sonar_waterfall_node colormaps
 
-# Mock sonar API (rov_sensors/omniscan_mock/)
--r rov_sensors/omniscan_mock/requirements.txt
+# Mock sonar API (rov_omniscan/omniscan_mock/)
+-r rov_omniscan/omniscan_mock/requirements.txt

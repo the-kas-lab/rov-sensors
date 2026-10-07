@@ -8,9 +8,9 @@ config/omniscan450_foxglove_layout.json once in Foxglove; it remembers it.
 Run after `source ~/ros2_ws/src/rov-sensors/env.sh` (puts the .venv with brping /
 fastapi / matplotlib on PYTHONPATH):
 
-    ros2 launch rov_sensors omniscan450.launch.py use_mock:=true      # no sonar needed
-    ros2 launch rov_sensors omniscan450.launch.py                     # real sonar on the ROV
-    ros2 launch rov_sensors omniscan450.launch.py use_mock:=true use_foxglove_app:=true
+    ros2 launch rov_omniscan omniscan450.launch.py use_mock:=true      # no sonar needed
+    ros2 launch rov_omniscan omniscan450.launch.py                     # real sonar on the ROV
+    ros2 launch rov_omniscan omniscan450.launch.py use_mock:=true use_foxglove_app:=true
 """
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess
@@ -48,7 +48,7 @@ def generate_launch_description():
         # The driver retries its connection, so start order doesn't matter.
         # Started directly (not via `ros2 run`, which can leave it running after Ctrl-C).
         Node(
-            package='rov_sensors',
+            package='rov_omniscan',
             executable='omniscan_mock',
             name='omniscan_mock',
             arguments=['--host', '127.0.0.1'],
@@ -57,7 +57,7 @@ def generate_launch_description():
         ),
 
         Node(
-            package='rov_sensors',
+            package='rov_omniscan',
             executable='omniscan450_node',
             name='omniscan450',
             output='screen',
@@ -70,7 +70,7 @@ def generate_launch_description():
         ),
 
         Node(
-            package='rov_sensors',
+            package='rov_omniscan',
             executable='sonar_waterfall_node',
             name='sonar_waterfall',
             output='screen',

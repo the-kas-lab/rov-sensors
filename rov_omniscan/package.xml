@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>rov_sensors</name>
+  <name>rov_omniscan</name>
   <version>0.0.0</version>
   <description>ROS 2 driver, waterfall display and mock for the Cerulean Omniscan 450 FS sonar</description>
   <maintainer email="gesemgudino@gmail.com">Gesem Mejia</maintainer>
@@ -10,7 +10,7 @@
   <exec_depend>rclpy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>rov_sensors_interfaces</exec_depend>
+  <exec_depend>rov_interfaces</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>foxglove_bridge</exec_depend>

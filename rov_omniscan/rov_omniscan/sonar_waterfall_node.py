@@ -5,7 +5,7 @@ Each incoming ping becomes one row of the image (newest at the top), with
 colour = echo strength. Columns are distance from the transducer, left to right.
 
 Subscribes:
-    omniscan450/profile    rov_sensors_interfaces/OmniscanProfile
+    omniscan450/profile    rov_interfaces/OmniscanProfile
 Publishes:
     omniscan450/waterfall  sensor_msgs/Image (rgb8)
 
@@ -18,6 +18,7 @@ Parameters:
 """
 
 import math
+import signal
 
 import matplotlib
 import numpy as np
@@ -27,7 +28,7 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image
 
-from rov_sensors_interfaces.msg import OmniscanProfile
+from rov_interfaces.msg import OmniscanProfile
 
 
 class SonarWaterfallNode(Node):
@@ -97,8 +98,11 @@ def main(args=None):
         if rclpy.ok():
             raise
     finally:
+        # Ctrl-C reaches the node twice under ros2 launch (terminal + launch forwarding).
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
         node.destroy_node()
         rclpy.try_shutdown()
+        signal.signal(signal.SIGINT, signal.SIG_IGN)  # try_shutdown restores rclpy's previous handler
 
 
 if __name__ == '__main__':

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """ROS 2 driver for the Cerulean Omniscan 450 FS sonar.
 
-Connects to the sonar over TCP (Ping protocol, same as omniscan450_reader.py),
+Connects to the sonar over TCP (Ping protocol, same as standalone/omniscan450_reader.py),
 configures it, and publishes every ping.
 
 Publishes:
-    omniscan450/profile  rov_sensors_interfaces/OmniscanProfile  every ping, power in dB
+    omniscan450/profile  rov_interfaces/OmniscanProfile  every ping, power in dB
     omniscan450/peak     sensor_msgs/Range  strongest echo beyond the ring-down zone
 
 Parameters (range settings can be changed live, e.g. from Foxglove's Parameters panel):
@@ -24,6 +24,7 @@ sonar (or the mock) is up and survives the link dropping.
 
 import array
 import builtins
+import signal
 import threading
 import time
 
@@ -41,7 +42,7 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Range
 
-from rov_sensors_interfaces.msg import OmniscanProfile
+from rov_interfaces.msg import OmniscanProfile
 
 # The sonar periodically sends message id 0, which brping doesn't know and
 # reports with a print() on every occurrence. Drop just that line.
@@ -236,9 +237,13 @@ def main(args=None):
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
+        # Ctrl-C reaches the node twice under ros2 launch (terminal + launch forwarding);
+        # don't let the second one interrupt a clean shutdown.
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
         node.shutdown()
         node.destroy_node()
         rclpy.try_shutdown()
+        signal.signal(signal.SIGINT, signal.SIG_IGN)  # try_shutdown restores rclpy's previous handler
 
 
 if __name__ == '__main__':

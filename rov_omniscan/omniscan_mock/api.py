@@ -1,6 +1,6 @@
 """FastAPI app: hosts the mock sonar and exposes it over HTTP / WebSocket.
 
-The Ping-protocol TCP server (what omniscan450_reader.py talks to) is started
+The Ping-protocol TCP server (what standalone/omniscan450_reader.py talks to) is started
 in the app's lifespan, so one process serves both.
 """
 

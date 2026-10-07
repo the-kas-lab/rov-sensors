@@ -6,7 +6,7 @@ One process runs two servers:
 
 | Port  | What                         | Who uses it                                            |
 |-------|------------------------------|--------------------------------------------------------|
-| 51200 | Ping protocol over TCP       | `omniscan450_reader.py`, brping, SonarView, etc.       |
+| 51200 | Ping protocol over TCP       | `standalone/omniscan450_reader.py`, brping, SonarView… |
 | 8000  | FastAPI (HTTP + WebSocket)   | You: JSON profiles, change ping params or the scene    |
 
 The TCP side uses the same binary Blue Robotics Ping protocol as the real sonar
@@ -17,15 +17,15 @@ needs the IP address changed.
 
 ```bash
 source ~/ros2_ws/src/rov-sensors/env.sh   # venv with fastapi etc. (see ../../README.md)
-ros2 run rov_sensors omniscan_mock        # once the workspace is built
-# or, without building:  cd rov-sensors/rov_sensors && python -m omniscan_mock
+ros2 run rov_omniscan omniscan_mock        # once the workspace is built
+# or, without building:  cd rov-sensors/rov_omniscan && python -m omniscan_mock
 ```
 
-`ros2 launch rov_sensors omniscan450.launch.py use_mock:=true` starts it for you
+`ros2 launch rov_omniscan omniscan450.launch.py use_mock:=true` starts it for you
 together with the ROS driver and Foxglove bridge.
 
 Options: `--tcp-port`, `--http-port`, `--host`, `--no-autostart`.
-You can also run it with `uvicorn omniscan_mock.api:app --port 8000` (from `rov_sensors/`). In that case,
+You can also run it with `uvicorn omniscan_mock.api:app --port 8000` (from `rov_omniscan/`). In that case,
 set the TCP side with environment variables: `OMNISCAN_MOCK_TCP_PORT`,
 `OMNISCAN_MOCK_TCP_HOST`, `OMNISCAN_MOCK_AUTOSTART=0`, `OMNISCAN_MOCK_DEVICE_TYPE`,
 `OMNISCAN_MOCK_DEVICE_REVISION`, `OMNISCAN_MOCK_FIRMWARE=1.0.0`.
@@ -33,8 +33,8 @@ set the TCP side with environment variables: `OMNISCAN_MOCK_TCP_PORT`,
 Then point the existing reader at it:
 
 ```bash
-python omniscan450_reader.py --host 127.0.0.1
-python omniscan450_reader.py --host 127.0.0.1 --range 20 --csv out.csv
+python standalone/omniscan450_reader.py --host 127.0.0.1
+python standalone/omniscan450_reader.py --host 127.0.0.1 --range 20 --csv out.csv
 ```
 
 ## Behaviour
@@ -44,7 +44,7 @@ python omniscan450_reader.py --host 127.0.0.1 --range 20 --csv out.csv
 - Accepts `os_ping_params`, `set_speed_of_sound` and `set_sync_channel_number`.
 - While pinging is enabled, streams `os_mono_profile` to every TCP client. The
   ping rate is limited by the two-way travel time, about 58 Hz at 10 m. That
-  matches the ~17 ms spacing in `omniscan_10pings.csv`.
+  matches the ~17 ms spacing in `standalone/omniscan_10pings.csv`.
 - By default the mock starts pinging as soon as it boots (10 m range, 600
   samples), so `--listen-only` works straight away.
 - Ping state is shared, the same as on the real device. When the reader exits
@@ -83,7 +83,7 @@ Interactive docs are at http://localhost:8000/docs.
 | WS     | `/ws/profiles`      | Push every profile as JSON                                 |
 
 Each profile JSON has every `os_mono_profile` field, plus `pwr_db` (already
-scaled to dB) and `distances_m`. These are the same values `omniscan450_reader.py`
+scaled to dB) and `distances_m`. These are the same values `standalone/omniscan450_reader.py`
 calculates.
 
 Examples:

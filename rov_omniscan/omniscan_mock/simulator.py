@@ -1,7 +1,7 @@
 """Synthetic Omniscan 450 FS profiles.
 
 Each ping is built in dB from the pieces visible in real captures
-(see omniscan_10pings.csv):
+(see standalone/omniscan_10pings.csv):
   * transducer ring-down: ~60 dB in the first few centimetres, decaying fast
   * a noise floor that rises ~3 dB per gain step (about -16 dB at gain 0)
   * echoes from the scene: a seabed with a reverberation tail, extra targets,

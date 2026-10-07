@@ -2,11 +2,21 @@
 
 import argparse
 import logging
+import signal
 
 import uvicorn
 
 from .api import create_app
 from .device import Config
+
+
+class _Server(uvicorn.Server):
+    def handle_exit(self, sig, frame):
+        # Ctrl-C reaches us twice under ros2 launch (terminal + launch forwarding); uvicorn
+        # would treat the second as "force quit" and skip a clean shutdown.
+        if self.should_exit and sig == signal.SIGINT:
+            return
+        super().handle_exit(sig, frame)
 
 
 def main():
@@ -25,7 +35,11 @@ def main():
                     autostart=env.autostart and not args.no_autostart,
                     device_type=env.device_type, device_revision=env.device_revision,
                     firmware=env.firmware)
-    uvicorn.run(create_app(config), host=args.host, port=args.http_port)
+    server = _Server(uvicorn.Config(create_app(config), host=args.host, port=args.http_port))
+    try:
+        server.run()
+    except KeyboardInterrupt:  # uvicorn re-raises the Ctrl-C it handled; it already shut down
+        pass
 
 
 if __name__ == "__main__":
