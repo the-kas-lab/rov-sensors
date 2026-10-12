@@ -1,13 +1,14 @@
 """
 All ROV sensors -> ROS 2 -> one Foxglove bridge.
 
-Includes the sonar launch (rov_omniscan) and the camera launch (rov_camera) with
-their own bridges turned off, then starts a single foxglove_bridge. Import
+Includes the sonar launch (rov_omniscan), the multibeam launch (rov_sonoptix) and the
+camera launch (rov_camera) with their own bridges turned off, then starts a single
+foxglove_bridge. Import
 config/rov_foxglove_layout.json once in Foxglove for the combined view.
 
 Run after `source ~/ros2_ws/src/rov-sensors/env.sh`:
 
-    ros2 launch rov_bringup rov.launch.py use_omniscan_mock:=true use_camera_mock:=true use_foxglove_app:=true  # no robot
+    ros2 launch rov_bringup rov.launch.py use_omniscan_mock:=true use_multibeam_mock:=true use_camera_mock:=true use_foxglove_app:=true  # no robot
     ros2 launch rov_bringup rov.launch.py use_camera_mock:=true                   # real sonar, laptop webcam as camera
     ros2 launch rov_bringup rov.launch.py camera_url:=rtsp://192.168.2.2:8554/<name> use_foxglove_app:=true
     ros2 launch rov_bringup rov.launch.py use_camera:=false                       # sonar only
@@ -24,11 +25,14 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     use_omniscan_mock = LaunchConfiguration('use_omniscan_mock')
+    use_multibeam_mock = LaunchConfiguration('use_multibeam_mock')
     use_camera_mock  = LaunchConfiguration('use_camera_mock')
     camera_mock_device = LaunchConfiguration('camera_mock_device')
     use_sonar        = LaunchConfiguration('use_sonar')
     use_camera       = LaunchConfiguration('use_camera')
+    use_multibeam    = LaunchConfiguration('use_multibeam')
     sonar_host       = LaunchConfiguration('sonar_host')
+    multibeam_host   = LaunchConfiguration('multibeam_host')
     camera_url       = LaunchConfiguration('camera_url')
     camera_udp_port  = LaunchConfiguration('camera_udp_port')
     use_foxglove_app = LaunchConfiguration('use_foxglove_app')
@@ -37,13 +41,17 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('use_omniscan_mock', default_value='false',
                               description='Run the mock Omniscan sonar on this machine instead of the real one'),
+        DeclareLaunchArgument('use_multibeam_mock', default_value='false',
+                              description='Run the mock Sonoptix ECHO multibeam on this machine instead of the real one'),
         DeclareLaunchArgument('use_camera_mock', default_value='false',
                               description='Stream a local webcam (camera_mock_device) instead of the robot camera'),
         DeclareLaunchArgument('camera_mock_device', default_value='/dev/video0',
                               description='Webcam used as the camera mock (when use_camera_mock:=true)'),
         DeclareLaunchArgument('use_sonar', default_value='true', description='Start the sonar'),
         DeclareLaunchArgument('use_camera', default_value='true', description='Start the camera'),
+        DeclareLaunchArgument('use_multibeam', default_value='true', description='Start the Sonoptix ECHO multibeam'),
         DeclareLaunchArgument('sonar_host', default_value='192.168.2.92', description='Sonar IP'),
+        DeclareLaunchArgument('multibeam_host', default_value='192.168.2.42', description='Multibeam IP'),
         DeclareLaunchArgument('camera_url', default_value='',
                               description='RTSP URL from BlueOS > Video Streams; empty = UDP on camera_udp_port'),
         DeclareLaunchArgument('camera_udp_port', default_value='5600',
@@ -58,6 +66,14 @@ def generate_launch_description():
             launch_arguments={'use_mock': use_omniscan_mock, 'host': sonar_host,
                               'use_bridge': 'false', 'use_foxglove_app': 'false'}.items(),
             condition=IfCondition(use_sonar),
+        ),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([FindPackageShare('rov_sonoptix'), 'launch', 'sonoptix_echo.launch.py'])),
+            launch_arguments={'use_mock': use_multibeam_mock, 'host': multibeam_host,
+                              'use_bridge': 'false', 'use_foxglove_app': 'false'}.items(),
+            condition=IfCondition(use_multibeam),
         ),
 
         IncludeLaunchDescription(

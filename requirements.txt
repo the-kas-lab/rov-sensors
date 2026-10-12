@@ -5,3 +5,6 @@ matplotlib       # sonar_waterfall_node colormaps
 
 # Mock sonar API (rov_omniscan/omniscan_mock/)
 -r rov_omniscan/omniscan_mock/requirements.txt
+
+# Mock multibeam API (rov_sonoptix/sonoptix_mock/); its RTSP stream also needs GStreamer, see its README
+-r rov_sonoptix/sonoptix_mock/requirements.txt

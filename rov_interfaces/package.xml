@@ -3,7 +3,7 @@
 <package format="3">
   <name>rov_interfaces</name>
   <version>0.0.0</version>
-  <description>Shared ROS messages for the ROV (e.g. Omniscan 450 FS sonar profiles)</description>
+  <description>Shared ROS messages for the ROV (Omniscan 450 FS sonar profiles, Sonoptix ECHO multibeam frames)</description>
   <maintainer email="gesemgudino@gmail.com">Gesem Mejia</maintainer>
   <license>TODO: License declaration</license>
 

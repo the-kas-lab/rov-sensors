@@ -18,6 +18,6 @@ setup(
     zip_safe=True,
     maintainer='Gesem Mejia',
     maintainer_email='gesemgudino@gmail.com',
-    description='Launches all ROV sensors (sonar + camera) with one Foxglove bridge',
+    description='Launches all ROV sensors (sonar, multibeam, camera) with one Foxglove bridge',
     license='TODO: License declaration',
 )

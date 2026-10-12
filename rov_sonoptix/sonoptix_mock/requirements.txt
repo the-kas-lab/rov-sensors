@@ -1,0 +1,6 @@
+fastapi>=0.100
+uvicorn[standard]>=0.23
+numpy
+pydantic>=2
+# GStreamer (not pip): conda install -c conda-forge pygobject gstreamer gst-plugins-base gst-plugins-good
+#   gst-plugins-bad gst-plugins-ugly gst-libav gst-rtsp-server
