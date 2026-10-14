@@ -72,6 +72,15 @@ def sector_deg(operation_mode, range_m):
     return 120.0 if is_high_frequency(operation_mode, range_m) else 90.0
 
 
+def check_sonar_params(p):
+    """Why the sonar would reject (or silently change) these settings, or None if they're fine."""
+    if p['sonar_range'] not in VALID_RANGES_M:
+        return f'range_m must be one of {", ".join(map(str, VALID_RANGES_M))} (got {p["sonar_range"]:g})'
+    if p['operation_mode'] not in OPERATION_MODES:
+        return f'operation_mode must be 0 (AUTO), 1 (HF), 2 (LF) or 3 (LFLR) (got {p["operation_mode"]})'
+    return None
+
+
 def float32_array(values):
     return array.array('f', np.asarray(values, dtype=np.float32).tobytes())
 
@@ -128,6 +137,11 @@ class SonoptixEchoNode(Node):
         self.declare_parameter('rtsp_latency_ms', 50)
         self.declare_parameter('stall_timeout_s', 5.0)
         self.add_on_set_parameters_callback(self._on_set_parameters)
+        # The callback only checks later changes; refuse bad start values too, rather than
+        # let the sonar silently change an unsupported range to 3 m.
+        problem = check_sonar_params(self._sonar_params())
+        if problem:
+            raise SystemExit(f'sonoptix_echo: {problem}')
 
         self.frame_pub = self.create_publisher(SonoptixFrame, 'sonoptix_echo/frame', qos_profile_sensor_data)
         self.image_pub = self.create_publisher(Image, 'sonoptix_echo/image', qos_profile_sensor_data)
@@ -251,12 +265,9 @@ class SonoptixEchoNode(Node):
         if not changed:
             return SetParametersResult(successful=True)
         p = self._sonar_params(changed)
-        if p['sonar_range'] not in VALID_RANGES_M:
-            return SetParametersResult(successful=False,
-                                       reason=f'range_m must be one of {", ".join(map(str, VALID_RANGES_M))}')
-        if p['operation_mode'] not in OPERATION_MODES:
-            return SetParametersResult(successful=False,
-                                       reason='operation_mode must be 0 (AUTO), 1 (HF), 2 (LF) or 3 (LFLR)')
+        problem = check_sonar_params(p)
+        if problem:
+            return SetParametersResult(successful=False, reason=problem)
         with self._lock:
             api = self._api
         if api is not None and not self.get_parameter('listen_only').value:

@@ -14,7 +14,7 @@ Run after `source ~/ros2_ws/src/rov-sensors/env.sh`:
     ros2 launch rov_bringup rov.launch.py use_camera:=false                       # sonar only
 """
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, GroupAction, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
@@ -60,30 +60,36 @@ def generate_launch_description():
                               description='Best-effort auto-launch the Foxglove desktop app, pre-connected'),
         DeclareLaunchArgument('bridge_port', default_value='8765', description='foxglove_bridge websocket port'),
 
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                PathJoinSubstitution([FindPackageShare('rov_omniscan'), 'launch', 'omniscan450.launch.py'])),
-            launch_arguments={'use_mock': use_omniscan_mock, 'host': sonar_host,
-                              'use_bridge': 'false', 'use_foxglove_app': 'false'}.items(),
-            condition=IfCondition(use_sonar),
-        ),
+        # Each sensor's launch is included in its own scope: launch arguments are otherwise
+        # shared, so e.g. the sonar's range_m default (10) would also reach the multibeam,
+        # which doesn't accept 10 m.
+        GroupAction(scoped=True, condition=IfCondition(use_sonar), actions=[
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    PathJoinSubstitution([FindPackageShare('rov_omniscan'), 'launch', 'omniscan450.launch.py'])),
+                launch_arguments={'use_mock': use_omniscan_mock, 'host': sonar_host,
+                                  'use_bridge': 'false', 'use_foxglove_app': 'false'}.items(),
+            ),
+        ]),
 
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                PathJoinSubstitution([FindPackageShare('rov_sonoptix'), 'launch', 'sonoptix_echo.launch.py'])),
-            launch_arguments={'use_mock': use_multibeam_mock, 'host': multibeam_host,
-                              'use_bridge': 'false', 'use_foxglove_app': 'false'}.items(),
-            condition=IfCondition(use_multibeam),
-        ),
+        GroupAction(scoped=True, condition=IfCondition(use_multibeam), actions=[
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    PathJoinSubstitution([FindPackageShare('rov_sonoptix'), 'launch', 'sonoptix_echo.launch.py'])),
+                launch_arguments={'use_mock': use_multibeam_mock, 'host': multibeam_host,
+                                  'use_bridge': 'false', 'use_foxglove_app': 'false'}.items(),
+            ),
+        ]),
 
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                PathJoinSubstitution([FindPackageShare('rov_camera'), 'launch', 'camera.launch.py'])),
-            launch_arguments={'use_mock': use_camera_mock, 'mock_device': camera_mock_device,
-                              'url': camera_url, 'udp_port': camera_udp_port,
-                              'use_bridge': 'false'}.items(),
-            condition=IfCondition(use_camera),
-        ),
+        GroupAction(scoped=True, condition=IfCondition(use_camera), actions=[
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    PathJoinSubstitution([FindPackageShare('rov_camera'), 'launch', 'camera.launch.py'])),
+                launch_arguments={'use_mock': use_camera_mock, 'mock_device': camera_mock_device,
+                                  'url': camera_url, 'udp_port': camera_udp_port,
+                                  'use_bridge': 'false'}.items(),
+            ),
+        ]),
 
         Node(
             package='foxglove_bridge',
